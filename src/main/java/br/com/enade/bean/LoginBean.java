@@ -33,19 +33,18 @@ public class LoginBean implements Serializable {
 	}
 
 	public String efetuaLogin() {
-		System.out.println("fazendo login do usuario " + this.usuario.getEmailUsuario());
+            System.out.println("fazendo login do usuario " + this.usuario.getEmailUsuario());
 
-		boolean existe = dao.existe(this.usuario);
-		if (existe) {
-			usuarioLogado = dao.recuperarUsuario(this.usuario);
-			context.getExternalContext().getSessionMap().put("usuarioLogado", usuarioLogado);			
-			return "index?faces-redirect=true";
-		}
-
-		context.getExternalContext().getFlash().setKeepMessages(true);
-		context.addMessage(null, new FacesMessage("Usuario nao encontrado"));
-
-		return "login?faces-redirect=true";
+            usuarioLogado = dao.recuperarUsuario(this.usuario);
+                
+            if (usuarioLogado == null) {
+                context.getExternalContext().getFlash().setKeepMessages(true);
+                context.addMessage(null, new FacesMessage("Usuario nao encontrado"));			
+            }else{
+                context.getExternalContext().getSessionMap().put("usuarioLogado", usuarioLogado);
+            }
+            
+            return "login?faces-redirect=true";
 	}
 
 	public String deslogar() {

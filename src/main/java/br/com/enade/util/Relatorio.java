@@ -51,50 +51,31 @@ public class Relatorio implements Serializable{
     }
    
     public void getRelatorio(String relatorio){
-        
         stream = this.getClass().getResourceAsStream("/reports/"+relatorio+".jasper");
-        Map<String, Object> params = new HashMap<String, Object>();
-        baos = new ByteArrayOutputStream();
-        
-        try {
-            
-            JasperReport report = (JasperReport) JRLoader.loadObject(stream);
-            
-            JasperPrint print = JasperFillManager.fillReport(report, params, getConexao());
-            JasperExportManager.exportReportToPdfStream(print, baos);
-            
-            response.reset();
-            response.setContentType("application/pdf");
-            response.setContentLength(baos.size());
-            response.setHeader("Content-disposition", "inline; filename="+relatorio+".pdf");
-            response.getOutputStream().write(baos.toByteArray());
-            response.getOutputStream().flush();
-            response.getOutputStream().close();
-            
-            context.responseComplete();
-            fecharConexao();
-            
-        } catch (JRException | IOException ex) {
-            Logger.getLogger(Relatorio.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        montarRelatorio("ListaUsuario", null);
     }    
     
     
     public void getRelatorioAluno(List<Tbusuario> listaUsuario) throws IOException{
         stream = this.getClass().getResourceAsStream("/reports/ListaAlunos.jasper");
+        montarRelatorio("ListaUsuario", listaUsuario);
+    }
+    
+    private void montarRelatorio(String filename, List<Tbusuario> listaUsuario){
         Map<String, Object> params = new HashMap<String, Object>();
         baos = new ByteArrayOutputStream();
-        
         try{
             JasperReport report = (JasperReport) JRLoader.loadObject(stream);
-            JasperPrint print = JasperFillManager.fillReport(report, params, new JRBeanCollectionDataSource(listaUsuario));
+            JasperPrint print = JasperFillManager.fillReport(report, params, getConexao());
+            if(listaUsuario != null)
+                print = JasperFillManager.fillReport(report, params, new JRBeanCollectionDataSource(listaUsuario));
             //JasperPrint print = JasperFillManager.fillReport(report, params, getConexao());
             JasperExportManager.exportReportToPdfStream(print, baos);
             
             response.reset();
             response.setContentType("application/pdf");
             response.setContentLength(baos.size());
-            response.setHeader("Content-disposition", "inline; filename=ListaAlunos.pdf");
+            response.setHeader("Content-disposition", "inline; filename="+filename+".pdf");
             response.getOutputStream().write(baos.toByteArray());
             response.getOutputStream().flush();
             response.getOutputStream().close();
@@ -102,7 +83,7 @@ public class Relatorio implements Serializable{
             context.responseComplete();
             fecharConexao();
             
-        }catch(JRException ex){
+        }catch(Exception ex){
             Logger.getLogger(Relatorio.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
